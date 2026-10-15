@@ -20,7 +20,11 @@
 TSYP14 Technical Challenge, EnergyMind Tunisia (IEEE IES & PES). Phase 1 project proposal.
 
 **Team NABDH:** Mohamed Rayen Romdhani, Mouath Chouchane, Yassine Ben Abdallah, Zina Djerbi.
-IEEE ENIM Student Branch. Submitted 15 October 2026.
+IEEE ENIM Student Branch. All four members are IEEE Power & Energy Society (PES) members.
+Submitted 15 October 2026.
+
+**Bonus criteria addressed:** PES membership (all members) and business scope: budget,
+implementation, continuous training and deployment cost (section 8).
 
 **Repository:** [github.com/RayenRomdhani/nabdh](https://github.com/RayenRomdhani/nabdh)
 

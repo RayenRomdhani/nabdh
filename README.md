@@ -3,6 +3,9 @@
 NABDH ("pulse" in Arabic) is a trust layer for low-voltage grid data, built for the
 **TSYP14 EnergyMind Tunisia** technical challenge (IEEE IES & PES).
 
+Team NABDH, IEEE ENIM Student Branch: Mohamed Rayen Romdhani, Mouath Chouchane,
+Yassine Ben Abdallah and Zina Djerbi, all IEEE PES members.
+
 It sits between raw smart-meter data and any automated decision. For every meter and every
 minute it answers one question: *can this reading be trusted, and if not, is the grid
 misbehaving or is the data?*
