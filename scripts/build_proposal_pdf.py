@@ -16,7 +16,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import (Image, KeepTogether, ListFlowable, ListItem, PageBreak,
+from reportlab.platypus import (CondPageBreak, Image, KeepTogether, ListFlowable, ListItem, PageBreak,
                                 Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -143,10 +143,12 @@ def build_story(md: str):
             if not first_h1_seen:
                 story.append(PageBreak())
             first_h1_seen = True
+            story.append(CondPageBreak(45 * mm))   # never strand a section title at a page foot
             story.append(Paragraph(inline(s[3:]), S["h1"]))
             continue
         if s.startswith("### "):
-            flush(); story.append(Paragraph(inline(s[4:]), S["h2"])); continue
+            flush(); story.append(CondPageBreak(30 * mm))
+            story.append(Paragraph(inline(s[4:]), S["h2"])); continue
         m = re.match(r"!\[.*?\]\((.+?)\)", s.strip())
         if m:
             flush(); story.append(KeepTogether(image(m.group(1)))); continue

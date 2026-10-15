@@ -148,8 +148,9 @@ listed in `data/ground_truth.csv`, and `data/README.md` documents the generation
 - The forger is given every advantage we could think of: fabricated data has the right level,
   the right noise and even a realistic 50 Hz wobble, and replayed data is the meter's own
   genuine recording.
-- Bias is injected on meters with PV and at mild levels (40 % to 70 % of the true value),
-  which is why it is our weakest class, and we report it.
+- Bias is injected at mild levels (readings at 40 % to 70 % of the true value) on random
+  meters, including one with rooftop PV whose net power is close to zero. That is why it is
+  our weakest class, and we report it.
 - The baseline sees exactly the same data and the same clean calibration episodes.
 - Everything is seeded: anyone can rebuild the dataset and get the same numbers with
   `python scripts/evaluate.py`.
