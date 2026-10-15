@@ -1,0 +1,136 @@
+{
+  "split": {
+    "train": [
+      "train_summer_evening",
+      "train_winter_morning"
+    ],
+    "test": [
+      "test_summer_evening",
+      "test_summer_heatwave",
+      "test_ramadan_iftar",
+      "test_winter_morning"
+    ]
+  },
+  "episodes": [
+    {
+      "name": "train_summer_evening",
+      "kind": "summer_evening",
+      "duration_s": 3600,
+      "seed": 101,
+      "grid_events": [],
+      "equipment_faults": []
+    },
+    {
+      "name": "train_winter_morning",
+      "kind": "winter_morning",
+      "duration_s": 3600,
+      "seed": 102,
+      "grid_events": [],
+      "equipment_faults": []
+    },
+    {
+      "name": "test_summer_evening",
+      "kind": "summer_evening",
+      "duration_s": 3600,
+      "seed": 201,
+      "grid_events": [
+        [
+          "freq_dip",
+          3079,
+          90
+        ],
+        [
+          "mv_sag",
+          1967,
+          20
+        ]
+      ],
+      "equipment_faults": [
+        [
+          0,
+          1335,
+          420,
+          0.5
+        ]
+      ]
+    },
+    {
+      "name": "test_summer_heatwave",
+      "kind": "summer_heatwave",
+      "duration_s": 3600,
+      "seed": 202,
+      "grid_events": [
+        [
+          "freq_dip",
+          2541,
+          90
+        ],
+        [
+          "mv_sag",
+          1010,
+          20
+        ]
+      ],
+      "equipment_faults": [
+        [
+          15,
+          1657,
+          420,
+          0.5
+        ]
+      ]
+    },
+    {
+      "name": "test_ramadan_iftar",
+      "kind": "ramadan_iftar",
+      "duration_s": 3600,
+      "seed": 203,
+      "grid_events": [
+        [
+          "freq_dip",
+          3252,
+          90
+        ],
+        [
+          "mv_sag",
+          1045,
+          20
+        ]
+      ],
+      "equipment_faults": [
+        [
+          5,
+          2223,
+          420,
+          0.5
+        ]
+      ]
+    },
+    {
+      "name": "test_winter_morning",
+      "kind": "winter_morning",
+      "duration_s": 3600,
+      "seed": 204,
+      "grid_events": [
+        [
+          "freq_dip",
+          2547,
+          90
+        ],
+        [
+          "mv_sag",
+          2751,
+          20
+        ]
+      ],
+      "equipment_faults": [
+        [
+          3,
+          985,
+          420,
+          0.5
+        ]
+      ]
+    }
+  ]
+}
