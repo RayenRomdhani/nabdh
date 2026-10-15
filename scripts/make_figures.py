@@ -157,6 +157,42 @@ def timeline(verdicts: pd.DataFrame, gt: pd.DataFrame, episode="test_summer_even
     save(fig, "fig4_timeline.png")
 
 
+def rule_ladder():
+    """The verdict ladder as yes/no questions, top to bottom."""
+    steps = [
+        ("1. Are voltage and current frozen?", "yes", "STUCK", ORANGE),
+        ("2. Does the meter carry the grid & feeder pulse?", "no", "REPLAY if the pulse matches an\nearlier moment, else FABRICATED", ORANGE),
+        ("3. Does its voltage match Ohm's-law prediction?", "no", "EQUIPMENT_FAULT if the error grows\nwith its own current, else DRIFT", ORANGE),
+        ("4. Does the energy add up at the transformer?", "no", "BIAS (gap opened when this\nmeter's reading dropped)", ORANGE),
+        ("5. Is the whole feeder moving together?", "yes", "GRID_EVENT (real data,\nalert operations)", BLUE),
+        ("6. Does the Isolation Forest find it unusual?", "yes", "UNEXPLAINED (human review)", VIOLET),
+    ]
+    fig, ax = plt.subplots(figsize=(9, 7.4))
+    ax.set_xlim(0, 100); ax.set_ylim(0, 100); ax.axis("off")
+    top, gap, h = 92, 13.5, 8.5
+    for k, (q, ans, verdict, col) in enumerate(steps):
+        y = top - k * gap
+        ax.add_patch(FancyBboxPatch((2, y - h / 2), 50, h, boxstyle="round,pad=0.3,rounding_size=1.5",
+                                    fc="#f1f0ec", ec=INK2, lw=1))
+        ax.text(27, y, q, ha="center", va="center", fontsize=9.2, color=INK)
+        ax.add_patch(FancyBboxPatch((63, y - h / 2), 35, h, boxstyle="round,pad=0.3,rounding_size=1.5",
+                                    fc=col + "22", ec=col, lw=1.2))
+        ax.text(80.5, y, verdict, ha="center", va="center", fontsize=8.6, color=INK, linespacing=1.3)
+        ax.annotate("", (62.4, y), (52.8, y), arrowprops=dict(arrowstyle="-|>", color=col, lw=1.4))
+        ax.text(57.6, y + 1.4, ans, ha="center", fontsize=8.5, color=col, fontweight="bold")
+        nxt = "yes" if ans == "no" else "no"
+        ax.annotate("", (27, y - h / 2 - 4.6), (27, y - h / 2 - 0.4),
+                    arrowprops=dict(arrowstyle="-|>", color=INK2, lw=1.1))
+        ax.text(28.4, y - h / 2 - 2.6, nxt, fontsize=8.5, color=INK2)
+    y = top - len(steps) * gap
+    ax.add_patch(FancyBboxPatch((14, y - h / 2 + 1), 26, h - 2, boxstyle="round,pad=0.3,rounding_size=1.5",
+                                fc=AQUA + "22", ec=AQUA, lw=1.2))
+    ax.text(27, y + 0, "NORMAL: trust the data", ha="center", va="center", fontsize=9.2, color=INK)
+    ax.text(2, 99, "Every minute, for every meter: the first answer that points to a problem decides",
+            fontsize=10, color=INK, fontweight="bold")
+    save(fig, "fig5_rule_ladder.png")
+
+
 def architecture():
     fig, ax = plt.subplots(figsize=(10, 4.4))
     ax.set_xlim(0, 100); ax.set_ylim(0, 44); ax.axis("off")
@@ -195,6 +231,7 @@ def main():
     cm = pd.read_csv(ROOT / "results" / "confusion_matrix.csv", index_col=0)
     verdicts = pd.read_csv(ROOT / "results" / "window_verdicts.csv.gz")
     architecture()
+    rule_ladder()
     cover_pulse(episodes, gt)
     pulse_overlay(episodes, gt)
     confusion(cm)

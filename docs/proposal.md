@@ -101,6 +101,19 @@ stream sitting at a perfect 231 V does not.
 
 ![Pulse comparison](../results/figures/fig1_pulse_overlay.png)
 
+### Words used in this proposal
+
+| Term | Meaning |
+|---|---|
+| Grid pulse | the second-by-second wobble of grid frequency, identical everywhere on the grid |
+| Feeder pulse | the voltage wobble shared by all meters on one transformer |
+| Pulse match | correlation between a meter's changes and the reference changes (1 = identical, 0 = unrelated) |
+| Voltage twin | each meter's voltage predicted by Ohm's law from the transformer voltage and all currents |
+| Energy gap | transformer power minus all meter powers minus cable losses; near zero when everyone is honest |
+| Window | one minute of data from one meter, checked every 30 s |
+| Verdict | NABDH's conclusion for a window: one of 8 classes (section 6.1) |
+| Incident | consecutive windows with the same verdict on the same meter, reviewed as one ticket |
+
 ## 5. Data and anomaly-simulation plan
 
 Fault-labelled grid data at one second does not exist publicly for Tunisia, so Phase 1 uses
@@ -138,29 +151,36 @@ bias that never jumps).
 
 ### 6.1 Anomaly and bias detection
 
-Every 60 s window (30 s hop) produces this evidence for each meter:
+Every 30 seconds, NABDH looks at the last minute of each meter and asks six yes/no questions
+in a fixed order. The first answer that points to a problem decides the verdict.
 
-- **grid pulse match**: correlation of the meter's frequency changes with the transformer's;
-- **feeder pulse match**: correlation of its voltage changes with its physics twin, i.e. the
-  voltage rebuilt from the transformer voltage and every reported current;
-- **frozen share**: fraction of seconds with no change at all;
-- **local residual**: the meter's voltage minus its twin, compared with its neighbours on
-  both sides, so a wrong current elsewhere (which shifts everyone downstream) cancels out;
-- **bias onset**: when energy at the transformer suddenly stops being accounted for, the
-  meter whose reading dropped by the same amount in the same second;
-- **feeder context**: frequency excursion or transformer voltage sag.
+![Rule ladder](../results/figures/fig5_rule_ladder.png)
 
-A fixed rule ladder turns evidence into a verdict, in this order: STUCK, then the pulse test
-(REPLAY if the pulse matches an earlier moment, FABRICATED otherwise), then EQUIPMENT_FAULT
-and DRIFT from the residual, then BIAS from the energy balance, then GRID_EVENT. An Isolation
-Forest trained on clean windows is the safety net for anything the rules do not describe
-(UNEXPLAINED). Once a meter fails the pulse test, its current is rebuilt from Kirchhoff's
-current law (transformer current minus the trusted meters) so it cannot distort its
-neighbours' checks.
+What each question checks, in plain words:
 
-The distinction the challenge asks for falls out of the pulse. During a genuine event, the
-pulse stays coherent across every meter while the values move. During a data problem, one
-meter loses the pulse or breaks the physics while the rest of the feeder is calm.
+1. **Frozen?** Real mains voltage always moves a little. A meter whose voltage and current
+   do not change at all for most of the minute has a stuck sensor.
+2. **Pulse?** We correlate the meter's second-by-second frequency changes with the
+   transformer's, and its voltage changes with what physics predicts. A genuine meter scores
+   about 0.9, fake data about 0. If the pulse is missing, NABDH searches the last 40 minutes
+   of the reference: a match at an earlier moment means replayed data, and gives the delay.
+3. **Voltage right?** From the transformer voltage and every meter's current, Ohm's law
+   predicts each meter's voltage (the voltage twin). A drifting sensor reads off the
+   prediction while its neighbours do not. If the error grows when the house draws more
+   current, the problem is physical: a loose or burnt connection.
+4. **Energy adds up?** Transformer power must equal the sum of all meters plus cable
+   losses. If power suddenly goes missing in the same second one meter's reading drops by
+   the same amount, that meter is under-reporting.
+5. **Whole feeder moving?** A frequency dip or a voltage sag that every meter sees in step
+   is a genuine grid event. The data is real and should be acted on.
+6. **Anything else odd?** An Isolation Forest trained on normal data catches patterns that
+   none of the rules describe.
+
+Two details keep this robust. Once a meter is caught lying, its current is replaced by what
+the transformer says is missing (Kirchhoff's current law), so it cannot spoil its neighbours'
+Ohm's-law check. And because the checks compare *changes* across meters, a real grid event
+moves every meter together and never looks like a sensor problem, which is exactly the
+distinction the challenge asks for.
 
 ### 6.2 Confidence scores and explainability
 
