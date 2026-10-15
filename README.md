@@ -60,12 +60,19 @@ nabdh/            the trust layer
   explain.py      plain-language explanation for every verdict
   governance.py   AUTO / ASSIST / HUMAN routing, incidents, canary checks
   audit.py        hash-chained decision log
-scripts/          generate_dataset.py, evaluate.py, make_figures.py
+scripts/          generate_dataset.py, evaluate.py, make_figures.py, build_notebook.py
+notebooks/        NABDH_demo.ipynb, executed walkthrough that renders on GitHub
 data/             the benchmark dataset and its data card
 results/          metrics, confusion matrix, decision log, example explanations, figures
 docs/             project proposal (Markdown + PDF), governance and noosphere designs
 tests/            physics and guarantee checks (pytest)
 ```
+
+## Quick look without installing anything
+
+Open [`notebooks/NABDH_demo.ipynb`](notebooks/NABDH_demo.ipynb) on GitHub. It runs the whole
+pipeline step by step (data, pulse, detection, explanations, audit log, scores) with every
+output saved.
 
 ## Run it
 
