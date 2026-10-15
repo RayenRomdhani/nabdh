@@ -53,6 +53,9 @@ S = {
     "quote": ParagraphStyle("quote", fontName="DV-I", fontSize=9.4, leading=14, textColor=INK2,
                             leftIndent=12, borderPadding=(6, 8, 6, 8), backColor=TINT,
                             spaceBefore=4, spaceAfter=10),
+    "lead": ParagraphStyle("lead", fontName="DV", fontSize=11.5, leading=17, textColor=INK,
+                           borderPadding=(10, 12, 10, 12), backColor=TINT, leftIndent=12,
+                           rightIndent=12, spaceBefore=6, spaceAfter=18),
     "cell": ParagraphStyle("cell", fontName="DV", fontSize=8.4, leading=11, textColor=INK),
     "cellh": ParagraphStyle("cellh", fontName="DV-B", fontSize=8.4, leading=11,
                             textColor=colors.white),
@@ -107,8 +110,9 @@ def build_story(md: str):
         if para:
             text = " ".join(para)
             if text.startswith("> "):
+                style = S["quote"] if first_h1_seen else S["lead"]   # cover gets the big box
                 story.append(Paragraph(inline(re.sub(r"^>\s?", "", text).replace(" > ", " ")),
-                                       S["quote"]))
+                                       style))
             else:
                 style = S["meta"] if not first_h1_seen else S["body"]
                 story.append(Paragraph(inline(text), style))
@@ -129,7 +133,7 @@ def build_story(md: str):
         if not s.strip():
             flush(); continue
         if s.startswith("# "):
-            flush(); story.append(Spacer(1, 40 * mm)); story.append(Paragraph(inline(s[2:]), S["title"]))
+            flush(); story.append(Spacer(1, 6 * mm)); story.append(Paragraph(inline(s[2:]), S["title"]))
             continue
         if s.startswith("## "):
             flush()

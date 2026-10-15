@@ -2,12 +2,25 @@
 
 ## A pulse-based trust layer for Tunisian low-voltage grid data
 
+> **The idea in one sentence.** Every genuine meter reading carries the grid's random
+> frequency wobble, the same at every point of the grid at the same second, and fake or
+> replayed data cannot reproduce it. NABDH checks for this "pulse", then uses Ohm's and
+> Kirchhoff's laws to tell a broken sensor, a tampered meter and a real fault apart, before
+> any automated system acts on the data.
+
+| Phase 1 result (simulated feeder, 11,340 meter-minutes) | NABDH | Classic anomaly detector |
+|---|---|---|
+| Problems caught (recall) | **90 %** | 5 % |
+| Alarms that were right (precision) | **97 %** | 8 % |
+| False alarms on normal data | **0.18 %** | 3.2 % |
+| Real grid events wrongly called bad data | **0.6 %** | 35 % |
+
 TSYP14 Technical Challenge, EnergyMind Tunisia (IEEE IES & PES). Phase 1 project proposal.
 
-Team NABDH: Mohamed Rayen Romdhani, Mouath Chouchane, Yassine Ben Abdallah, Zina Djerbi.
+**Team NABDH:** Mohamed Rayen Romdhani, Mouath Chouchane, Yassine Ben Abdallah, Zina Djerbi.
 IEEE ENIM Student Branch. Submitted 15 October 2026.
 
-Repository: https://github.com/RayenRomdhani/nabdh
+**Repository:** [github.com/RayenRomdhani/nabdh](https://github.com/RayenRomdhani/nabdh)
 
 ## 1. Summary
 
