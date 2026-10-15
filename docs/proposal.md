@@ -140,6 +140,23 @@ reported values only:
 The four test episodes hold 40 injections, 4 equipment faults and 8 grid events. Every one is
 listed in `data/ground_truth.csv`, and `data/README.md` documents the generation in full.
 
+**Why this is a fair test, even though it is simulated.** We tried not to make it easy:
+
+- Thresholds and the Isolation Forest are learned from the two clean episodes only. The test
+  episodes are never used for tuning, and the heatwave and Ramadan scenarios never appear in
+  training.
+- The forger is given every advantage we could think of: fabricated data has the right level,
+  the right noise and even a realistic 50 Hz wobble, and replayed data is the meter's own
+  genuine recording.
+- Bias is injected on meters with PV and at mild levels (40 % to 70 % of the true value),
+  which is why it is our weakest class, and we report it.
+- The baseline sees exactly the same data and the same clean calibration episodes.
+- Everything is seeded: anyone can rebuild the dataset and get the same numbers with
+  `python scripts/evaluate.py`.
+
+Real feeders are noisier than our simulator, so the numbers will drop on real data; Phase 2
+is where we measure by how much.
+
 Phase 2 plan: replace the simulated frequency with a public 1 s Continental European
 frequency recording, shape household profiles on published STEG load curves, add a
 three-phase feeder, and add harder attacks (a forger who copies the public frequency, slow
@@ -248,7 +265,8 @@ Phase 1 runs a single node; the sharing layer is designed and will be prototyped
 
 ## 7. Phase 1 results
 
-Test set: 4 episodes, 11,340 scored meter-windows.
+Test set: 4 episodes, 11,340 scored meter-windows, none of them used for tuning (see the
+fairness notes in section 5).
 
 | Metric | NABDH | Isolation Forest on values |
 |---|---|---|

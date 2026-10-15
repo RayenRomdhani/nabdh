@@ -48,6 +48,11 @@ meter that draws little power or exports PV hides its bias inside the noise. Equ
 are always flagged but 41 % of the windows get the label DRIFT instead of EQUIPMENT_FAULT.
 Both are Phase 2 work. Full numbers are in [`results/metrics.json`](results/metrics.json).
 
+The data is simulated, so we made the test hard on purpose: thresholds come from clean
+training hours only, the heatwave and Ramadan hours are never seen in training, the forger
+fakes a realistic 50 Hz wobble, and replays use the meter's own genuine data. Details are in
+section 5 of the proposal.
+
 ## What is in the repository
 
 ```
