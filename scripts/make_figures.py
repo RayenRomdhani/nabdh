@@ -193,6 +193,85 @@ def rule_ladder():
     save(fig, "fig5_rule_ladder.png")
 
 
+def operator_mockup(episodes):
+    """Operator review screen, filled with a real incident from the decision log."""
+    recs = [json.loads(l) for l in (ROOT / "results" / "decision_log.jsonl").read_text().splitlines()]
+    ep_name = "test_summer_evening"
+    queue = sorted([r for r in recs if r["episode"] == ep_name and r["route"] == "HUMAN"
+                    and r["confidence"] > 0.5], key=lambda r: r["start_s"])[:6]
+    sel = next(r for r in queue if r["verdict"] == "REPLAY")
+    queue = [r for r in queue if r is sel or r["meter"] != sel["meter"]]
+    ep = {e.spec.name: e for e in episodes}[ep_name]
+    j, lag = sel["meter"], int(sel["evidence"]["replay_lag"])
+    t0 = sel["start_s"] + 60
+
+    fig = plt.figure(figsize=(11, 6.6))
+    fig.patch.set_facecolor("#f4f3ef")
+    bar = fig.add_axes([0, 0.93, 1, 0.07]); bar.axis("off")
+    bar.add_patch(Rectangle((0, 0), 1, 1, color="#1d2b3a", transform=bar.transAxes))
+    bar.text(0.015, 0.5, "NABDH operator console   |   Feeder F-014   |   human review queue",
+             color="white", va="center", fontsize=10.5, fontweight="bold")
+    bar.text(0.985, 0.5, "operator: on shift", color="#c3c2b7", va="center", ha="right", fontsize=9)
+
+    q = fig.add_axes([0.012, 0.03, 0.27, 0.88]); q.axis("off")
+    q.text(0, 0.985, "Queue (newest first)", fontsize=10, fontweight="bold", color=INK, va="top")
+    sev = {"REPLAY": "#e34948", "FABRICATED": "#e34948", "EQUIPMENT_FAULT": "#e34948",
+           "BIAS": "#eda100", "DRIFT": "#eda100"}
+    for k, r in enumerate(reversed(queue)):
+        y = 0.9 - k * 0.135
+        on = r is sel
+        q.add_patch(FancyBboxPatch((0, y - 0.105), 0.98, 0.11, boxstyle="round,pad=0.005,rounding_size=0.02",
+                                   fc="white" if not on else "#e8f0fb", ec=BLUE if on else GRID,
+                                   lw=1.4 if on else 0.8, transform=q.transAxes))
+        q.add_patch(Rectangle((0.02, y - 0.09), 0.018, 0.08, color=sev.get(r["verdict"], INK2),
+                              transform=q.transAxes))
+        q.text(0.07, y - 0.025, f"{r['verdict'].replace('_', ' ')}  M{r['meter']:02d}", fontsize=9,
+               fontweight="bold", color=INK, transform=q.transAxes)
+        q.text(0.07, y - 0.07, f"confidence {r['confidence']:.2f}  |  {r['start_s'] // 60:02d}:{r['start_s'] % 60:02d}",
+               fontsize=8, color=INK2, transform=q.transAxes)
+
+    m = fig.add_axes([0.3, 0.03, 0.685, 0.88]); m.axis("off")
+    m.add_patch(FancyBboxPatch((0, 0), 1, 1, boxstyle="round,pad=0.0,rounding_size=0.015", fc="white",
+                               ec=GRID, transform=m.transAxes))
+    m.text(0.025, 0.955, f"REPLAY on meter M{j:02d}", fontsize=14, fontweight="bold", color="#a32d2d")
+    m.text(0.025, 0.905, f"confidence {sel['confidence']:.2f}   |   route: HUMAN decision required   |   "
+           f"data already quarantined", fontsize=9, color=INK2)
+    expl = sel["explanation"].split(": ", 1)[1]
+    expl = expl[0].upper() + expl[1:]
+    import textwrap
+    m.text(0.025, 0.86, "\n".join(textwrap.wrap(expl, 112)), fontsize=8.8, color=INK, va="top",
+           linespacing=1.45)
+
+    for k, (ref_t, title, col) in enumerate([(t0, "Pulse now vs reference now", ORANGE),
+                                             (t0 - lag, f"Pulse now vs reference {lag} s ago", BLUE)]):
+        ax = fig.add_axes([0.33 + k * 0.335, 0.33, 0.3, 0.33])
+        ref = np.diff(ep.tx_f[ref_t:ref_t + 41]) * 1000
+        mm = np.diff(ep.meter_f[t0:t0 + 41, j]) * 1000
+        ax.plot(ref, color=col, lw=1.8, label="reference")
+        ax.plot(mm, color=INK2, lw=1.5, ls="--", label=f"meter M{j:02d}")
+        ax.set_title(f"{title}: match {np.corrcoef(ref, mm)[0, 1]:.2f}", fontsize=9, loc="left")
+        ax.tick_params(labelsize=7); ax.set_xlabel("seconds", fontsize=7.5)
+        ax.legend(frameon=False, fontsize=7, loc="upper right", ncol=2)
+        ax.set_facecolor("white")
+
+    ev = sel["evidence"]
+    m.text(0.025, 0.23, f"Evidence:  grid pulse now {ev['f_corr']:.2f}   |   feeder pulse now {ev['v_corr']:.2f}"
+           f"   |   best earlier match {ev['replay_corr']:.2f} at {lag} s", fontsize=8.6, color=INK)
+    m.text(0.025, 0.19, f"Suggested action: {sel['action']}", fontsize=8.6, color=INK)
+    buttons = [("Confirm: open security incident", "#a32d2d", "white"),
+               ("Reject: data is genuine", "white", INK),
+               ("Escalate", "white", INK), ("AI was wrong because...", "white", INK2)]
+    x = 0.025
+    for label, fc, tc in buttons:
+        w = 0.02 + 0.0088 * len(label)
+        m.add_patch(FancyBboxPatch((x, 0.05), w, 0.08, boxstyle="round,pad=0.004,rounding_size=0.015",
+                                   fc=fc, ec="#a32d2d" if fc != "white" else INK2, lw=1, transform=m.transAxes))
+        m.text(x + w / 2, 0.09, label, ha="center", va="center", fontsize=8.6, color=tc,
+               fontweight="bold" if fc != "white" else "normal", transform=m.transAxes)
+        x += w + 0.015
+    save(fig, "fig6_operator_console.png")
+
+
 def architecture():
     fig, ax = plt.subplots(figsize=(10, 4.4))
     ax.set_xlim(0, 100); ax.set_ylim(0, 44); ax.axis("off")
@@ -232,6 +311,7 @@ def main():
     verdicts = pd.read_csv(ROOT / "results" / "window_verdicts.csv.gz")
     architecture()
     rule_ladder()
+    operator_mockup(episodes)
     cover_pulse(episodes, gt)
     pulse_overlay(episodes, gt)
     confusion(cm)

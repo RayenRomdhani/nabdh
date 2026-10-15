@@ -43,6 +43,10 @@ grid event is one feeder-wide incident however many meters saw it.
 
 ## Operator interface (Phase 2 build, Phase 1 design)
 
+![Operator console mockup](../results/figures/fig6_operator_console.png)
+
+The mockup above shows a real replay incident from the Phase 1 test run.
+
 One screen per incident, read top to bottom:
 
 1. Verdict, confidence, route, and the recommended action.

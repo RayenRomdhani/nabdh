@@ -214,6 +214,13 @@ acts on a customer or an asset needs a human.
 Consecutive windows merge into incidents: the test set produced 94 incidents, of which 29
 were handled automatically, 1 went to one-click approval and 64 to the human queue.
 
+The operator reviews each incident on one screen: verdict and confidence, the plain-language
+reason, the meter's pulse drawn over the reference so the claim can be checked by eye, and
+four buttons. The mockup below is filled with a real replay incident from our test run. The
+working console is a Phase 2 deliverable.
+
+![Operator console](../results/figures/fig6_operator_console.png)
+
 Over-trust is measured with canaries: 5 % of the human queue are planted known-answer cases,
 the same idea as threat image projection in airport X-ray screening. Under-trust is measured
 as the share of correct verdicts the operator overrode. If over-trust rises, the interface
