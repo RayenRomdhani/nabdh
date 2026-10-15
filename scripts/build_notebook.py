@@ -17,7 +17,7 @@ code = new_code_cell
 cells = [
     md("""# NABDH demo: the grid signs its own data
 
-TSYP14 EnergyMind Tunisia, Phase 1. Team NABDH, IEEE ENIM Student Branch.
+TSYP14 EnergyMind Tunisia, Phase 1 prototype.
 
 This notebook walks through the whole prototype with its outputs saved, so you can read it
 on GitHub without installing anything. Each step is short:

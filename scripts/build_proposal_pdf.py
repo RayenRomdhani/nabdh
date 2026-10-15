@@ -182,7 +182,7 @@ def main():
     doc = SimpleDocTemplate(str(OUT), pagesize=A4, leftMargin=20 * mm, rightMargin=20 * mm,
                             topMargin=18 * mm, bottomMargin=20 * mm,
                             title="NABDH: the grid signs its own data",
-                            author="Mohamed Rayen Romdhani, Mouath Chouchane, Yassine Ben Abdallah, Zina Djerbi", subject="TSYP14 EnergyMind Tunisia, Phase 1")
+                            author="NABDH project", subject="TSYP14 EnergyMind Tunisia, Phase 1")
     doc.build(build_story(SRC.read_text(encoding="utf-8")), onFirstPage=footer, onLaterPages=footer)
     print("wrote", OUT.relative_to(ROOT))
 
