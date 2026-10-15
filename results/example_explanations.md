@@ -44,6 +44,6 @@ Meter M07, window 33:00-34:00: replayed data. The wobble is genuine but belongs 
 
 ## EQUIPMENT_FAULT  (confidence 0.99, route HUMAN)
 
-Meter M03, window 23:00-24:00: likely bad connection at the customer side. Grid pulse is intact (match 0.87), but the voltage sits 1.71 V below the physics model and sinks further when the house draws more current (correlation -0.27). That is the signature of a loose or burnt joint: a real safety issue, not a data issue.
+Meter M03, window 23:00-24:00: likely bad connection at the customer side. Grid pulse is intact (match 0.87), so the meter is real, but the voltage sits 1.71 V below the physics model and its voltage flickers out of step with the feeder (feeder pulse match 0.11), as arcing does. That is the signature of a loose or burnt joint: a real safety issue, not a data issue.
 
 *Action:* dispatch crew to customer connection

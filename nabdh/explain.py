@@ -53,11 +53,16 @@ def explain(r) -> str:
                 f"{int(r.replay_lag)} s ago (match {r.replay_corr:.2f} at that delay, "
                 f"{r.f_corr:.2f} now). Old real readings are being re-sent as new ones.")
     if v == EQUIPMENT_FAULT:
+        if r.ri_corr < -0.5:
+            why = (f"and sinks further when the house draws more current "
+                   f"(correlation {r.ri_corr:.2f})")
+        else:
+            why = (f"and its voltage flickers out of step with the feeder (feeder pulse "
+                   f"match {r.v_corr:.2f}), as arcing does")
         return (f"{m}, {when}: likely bad connection at the customer side. Grid pulse is "
-                f"intact (match {r.f_corr:.2f}), but the voltage sits {abs(r.res_mean):.2f} V "
-                f"below the physics model and sinks further when the house draws more current "
-                f"(correlation {r.ri_corr:.2f}). That is the signature of a loose or burnt "
-                f"joint: a real safety issue, not a data issue.")
+                f"intact (match {r.f_corr:.2f}), so the meter is real, but the voltage sits "
+                f"{abs(r.res_mean):.2f} V below the physics model {why}. That is the signature "
+                f"of a loose or burnt joint: a real safety issue, not a data issue.")
     if v == UNEXPLAINED:
         return (f"{m}, {when}: unusual pattern that matches no known signature "
                 f"(isolation score {r.if_score:.2f}). Passed to a human with all evidence.")

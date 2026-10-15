@@ -66,7 +66,7 @@
       "recognised_as_grid_event": 0.9553,
       "mistaken_for_data_problem": 0.0056
     },
-    "processing_ms_per_window_all_24_meters": 6.07
+    "processing_ms_per_window_all_24_meters": 6.04
   },
   "baseline_isolation_forest_values_only": {
     "precision": 0.0844,
