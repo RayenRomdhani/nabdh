@@ -1,0 +1,182 @@
+"""Figures for the README and the proposal (results/figures/*.png).
+
+    python scripts/make_figures.py      (run evaluate.py first)
+"""
+import json
+import sys
+from pathlib import Path
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+from matplotlib.patches import FancyBboxPatch, Rectangle  # noqa: E402
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from nabdh import dataset  # noqa: E402
+from nabdh.config import ALL_LABELS  # noqa: E402
+
+FIG = ROOT / "results" / "figures"
+BLUE, ORANGE, VIOLET, AQUA = "#2a78d6", "#eb6834", "#4a3aa7", "#1baf7a"
+INK, INK2, GRID, SURF = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
+
+plt.rcParams.update({
+    "font.family": "DejaVu Sans", "font.size": 10, "axes.edgecolor": GRID,
+    "axes.labelcolor": INK2, "xtick.color": INK2, "ytick.color": INK2,
+    "axes.spines.top": False, "axes.spines.right": False, "axes.grid": False,
+    "figure.facecolor": SURF, "axes.facecolor": SURF, "savefig.facecolor": SURF,
+    "axes.titleweight": "bold", "axes.titlesize": 11, "axes.titlecolor": INK,
+})
+
+
+def save(fig, name):
+    fig.savefig(FIG / name, dpi=170, bbox_inches="tight")
+    plt.close(fig)
+    print("wrote", name)
+
+
+def pulse_overlay(episodes, gt):
+    """Frequency changes of a meter against the reference, three situations."""
+    E = {e.spec.name: e for e in episodes}
+    cases = [("Genuine meter", None), ("Fabricated reading", "FABRICATED"), ("Replayed data", "REPLAY")]
+    fig, axes = plt.subplots(3, 1, figsize=(8, 6.2), sharex=True)
+    for ax, (title, kind) in zip(axes, cases):
+        if kind is None:
+            ep, j, t0 = E["test_summer_evening"], 10, 600
+        else:
+            r = gt[(gt.kind == kind)].iloc[0]
+            ep, j, t0 = E[r.episode], int(r.meter), int(r.t0) + 60
+        t = np.arange(60)
+        ref = np.diff(ep.tx_f[t0:t0 + 61]) * 1000
+        m = np.diff(ep.meter_f[t0:t0 + 61, j]) * 1000
+        c = np.corrcoef(ref, m)[0, 1]
+        ax.plot(t, ref, color=BLUE, lw=2, label="Grid pulse (reference)")
+        ax.plot(t, m, color=ORANGE, lw=2, ls="--", label=f"Meter M{j:02d}")
+        ax.axhline(0, color=GRID, lw=1, zorder=0)
+        ax.set_title(f"{title}: pulse match {c:.2f}", loc="left")
+        ax.set_ylabel("Δf per second (mHz)")
+    axes[0].legend(frameon=False, loc="upper right", ncol=2, labelcolor=INK2)
+    axes[-1].set_xlabel("seconds in the window")
+    fig.tight_layout()
+    save(fig, "fig1_pulse_overlay.png")
+
+
+def confusion(cm: pd.DataFrame):
+    labels = list(ALL_LABELS)
+    cols = [c for c in labels + ["UNEXPLAINED"] if c in cm.columns]
+    cm = cm.reindex(index=labels, columns=cols, fill_value=0)
+    norm = cm.div(cm.sum(axis=1), axis=0).fillna(0)
+    fig, ax = plt.subplots(figsize=(7.6, 5.6))
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("seq", ["#f1f6fd", "#9ec3ef", BLUE, "#123f78"])
+    ax.imshow(norm.values, cmap=cmap, vmin=0, vmax=1)
+    for i in range(norm.shape[0]):
+        for k in range(norm.shape[1]):
+            v = norm.values[i, k]
+            if cm.values[i, k]:
+                ax.text(k, i, f"{v:.2f}\n({cm.values[i, k]})", ha="center", va="center",
+                        fontsize=7.5, color="white" if v > 0.55 else INK)
+    short = [s.replace("EQUIPMENT_FAULT", "EQUIP_FAULT") for s in cols]
+    ax.set_xticks(range(len(cols)), short, rotation=35, ha="right", fontsize=8)
+    ax.set_yticks(range(len(labels)), [s.replace("EQUIPMENT_FAULT", "EQUIP_FAULT") for s in labels], fontsize=8)
+    ax.set_xlabel("NABDH verdict"); ax.set_ylabel("ground truth")
+    ax.set_title("Verdicts per ground-truth class (row share, window count)", loc="left")
+    for s in ax.spines.values():
+        s.set_visible(False)
+    save(fig, "fig2_confusion_matrix.png")
+
+
+def baseline_bars(metrics):
+    labels = [l for l in ALL_LABELS if l not in ("NORMAL",)]
+    nab = [metrics["nabdh"]["per_class"][l]["flagged_rate"] for l in labels]
+    base = [metrics["baseline_isolation_forest_values_only"]["flagged_rate_per_class"][l] for l in labels]
+    x = np.arange(len(labels))
+    fig, ax = plt.subplots(figsize=(8, 3.8))
+    ax.bar(x - 0.2, base, 0.38, color=ORANGE, label="Isolation Forest on values only")
+    ax.bar(x + 0.2, nab, 0.38, color=BLUE, label="NABDH (pulse + physics)")
+    for xi, v in zip(x, nab):
+        ax.text(xi + 0.2, v + 0.02, f"{v:.0%}", ha="center", fontsize=8, color=INK2)
+    ax.set_xticks(x, [l.replace("EQUIPMENT_FAULT", "EQUIP_FAULT") for l in labels], fontsize=8)
+    ax.set_ylim(0, 1.12)
+    ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
+    ax.set_ylabel("windows flagged as a problem")
+    ax.grid(axis="y", color=GRID, lw=0.8); ax.set_axisbelow(True)
+    ax.set_title("Flag rate by class. GRID_EVENT should stay low: it is real data", loc="left")
+    ax.legend(frameon=False, loc="upper left", bbox_to_anchor=(0, -0.13), ncol=2, labelcolor=INK2)
+    save(fig, "fig3_baseline_comparison.png")
+
+
+def timeline(verdicts: pd.DataFrame, gt: pd.DataFrame, episode="test_summer_evening"):
+    groups = {"GRID_EVENT": 1, "STUCK": 2, "DRIFT": 2, "BIAS": 2, "FABRICATED": 2,
+              "REPLAY": 2, "UNEXPLAINED": 2, "EQUIPMENT_FAULT": 3}
+    v = verdicts[verdicts.episode == episode]
+    t0s = np.sort(v.t0.unique())
+    N = v.meter.max() + 1
+    grid = np.zeros((N, len(t0s)))
+    idx = {t: k for k, t in enumerate(t0s)}
+    for r in v.itertuples():
+        grid[r.meter, idx[r.t0]] = groups.get(r.verdict, 0)
+    cmap = matplotlib.colors.ListedColormap(["#f1f0ec", BLUE, ORANGE, VIOLET])
+    fig, ax = plt.subplots(figsize=(9, 4.6))
+    ax.imshow(grid, aspect="auto", cmap=cmap, vmin=0, vmax=3, interpolation="nearest",
+              extent=[0, t0s[-1] / 60 + 1, N - 0.5, -0.5])
+    for r in gt[(gt.episode == episode) & (gt.meter >= 0)].itertuples():
+        ax.add_patch(Rectangle((r.t0 / 60, r.meter - 0.5), (r.t1 - r.t0) / 60, 1,
+                               fill=False, ec=INK, lw=1.1))
+        ax.text(r.t1 / 60 + 0.3, r.meter, r.kind.lower(), va="center", fontsize=6.5, color=INK2)
+    ax.set_xlabel("minutes into the episode"); ax.set_ylabel("meter")
+    ax.set_title("One hour on the feeder: NABDH verdicts (fill) vs injected truth (outline)", loc="left")
+    handles = [Rectangle((0, 0), 1, 1, color=c) for c in (BLUE, ORANGE, VIOLET)] + \
+              [Rectangle((0, 0), 1, 1, fill=False, ec=INK)]
+    ax.legend(handles, ["genuine grid event", "data problem", "equipment fault", "ground truth"],
+              frameon=False, loc="upper left", bbox_to_anchor=(0, -0.12), ncol=4, labelcolor=INK2)
+    save(fig, "fig4_timeline.png")
+
+
+def architecture():
+    fig, ax = plt.subplots(figsize=(10, 4.4))
+    ax.set_xlim(0, 100); ax.set_ylim(0, 44); ax.axis("off")
+
+    def box(x, y, w, h, title, sub, color):
+        ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.4,rounding_size=1.2",
+                                    fc=color + "1f", ec=color, lw=1.2))
+        ax.text(x + w / 2, y + h - 2.6, title, ha="center", va="top", fontsize=9.5,
+                fontweight="bold", color=INK)
+        ax.text(x + w / 2, y + h - 7.2, sub, ha="center", va="top", fontsize=7.6, color=INK2,
+                linespacing=1.35)
+
+    def arrow(x1, y1, x2, y2):
+        ax.annotate("", (x2, y2), (x1, y1), arrowprops=dict(arrowstyle="-|>", color=INK2, lw=1.1))
+
+    box(1, 14, 15, 22, "Raw 1 Hz data", "24 smart meters\nV, I, P, f\n+ transformer\nmeter", INK2)
+    box(21, 25, 18, 15, "Pulse checks", "grid pulse (frequency)\nfeeder pulse (voltage)\nfrozen test, replay search", BLUE)
+    box(21, 4, 18, 17, "Physics witnesses", "voltage twin (Ohm)\nenergy balance (Kirchhoff)\nKirchhoff imputation", AQUA)
+    box(44, 14, 17, 22, "Verdict ladder", "8 verdicts\nconfidence score\nplain-language why\n+ Isolation Forest\nsafety net", VIOLET)
+    box(66, 25, 15, 15, "Governance", "AUTO / ASSIST /\nHUMAN routing\ncanary checks", ORANGE)
+    box(66, 4, 15, 17, "Audit log", "hash-chained\nJSONL record of\nevery decision", INK2)
+    box(86, 14, 13, 22, "Noosphere", "share pulse +\nfingerprints\nkeep household\ndata local", BLUE)
+    arrow(16.6, 27, 20.4, 32); arrow(16.6, 22, 20.4, 13)
+    arrow(39.6, 32, 43.4, 28); arrow(39.6, 13, 43.4, 21)
+    arrow(61.6, 28, 65.4, 32); arrow(61.6, 21, 65.4, 13)
+    arrow(81.6, 32, 85.4, 28)
+    ax.text(50, 43, "NABDH trust layer: between raw grid data and automated action",
+            ha="center", fontsize=11, fontweight="bold", color=INK)
+    save(fig, "fig0_architecture.png")
+
+
+def main():
+    FIG.mkdir(parents=True, exist_ok=True)
+    episodes, gt, _ = dataset.load(ROOT / "data")
+    metrics = json.loads((ROOT / "results" / "metrics.json").read_text())
+    cm = pd.read_csv(ROOT / "results" / "confusion_matrix.csv", index_col=0)
+    verdicts = pd.read_csv(ROOT / "results" / "window_verdicts.csv.gz")
+    architecture()
+    pulse_overlay(episodes, gt)
+    confusion(cm)
+    baseline_bars(metrics)
+    timeline(verdicts, gt)
+
+
+if __name__ == "__main__":
+    main()
