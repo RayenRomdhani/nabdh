@@ -8,6 +8,8 @@
 > Kirchhoff's laws to tell a broken sensor, a tampered meter and a real fault apart, before
 > any automated system acts on the data.
 
+![The pulse check](../results/figures/fig_cover_pulse.png)
+
 | Phase 1 result (simulated feeder, 11,340 meter-minutes) | NABDH | Classic anomaly detector |
 |---|---|---|
 | Problems caught (recall) | **90 %** | 5 % |

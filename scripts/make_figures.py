@@ -63,6 +63,29 @@ def pulse_overlay(episodes, gt):
     save(fig, "fig1_pulse_overlay.png")
 
 
+def cover_pulse(episodes, gt):
+    """The whole idea in one picture, sized for the proposal cover."""
+    E = {e.spec.name: e for e in episodes}
+    r = gt[gt.kind == "FABRICATED"].iloc[0]
+    cases = [(E["test_summer_evening"], 10, 600, "Genuine meter: follows the grid pulse"),
+             (E[r.episode], int(r.meter), int(r.t0) + 60, "Fabricated data: no pulse")]
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 2.7), sharey=True)
+    for ax, (ep, j, t0, title) in zip(axes, cases):
+        t = np.arange(40)
+        ref = np.diff(ep.tx_f[t0:t0 + 41]) * 1000
+        m = np.diff(ep.meter_f[t0:t0 + 41, j]) * 1000
+        c = np.corrcoef(ref, m)[0, 1]
+        ax.plot(t, ref, color=BLUE, lw=2, label="grid pulse")
+        ax.plot(t, m, color=ORANGE, lw=2, ls="--", label="meter")
+        ax.axhline(0, color=GRID, lw=1, zorder=0)
+        ax.set_title(f"{title} (match {c:.2f})", loc="left", fontsize=9.5)
+        ax.set_xlabel("seconds")
+    axes[0].set_ylabel("frequency change\nper second (mHz)")
+    axes[1].legend(frameon=False, loc="upper right", ncol=2, labelcolor=INK2, fontsize=8)
+    fig.tight_layout()
+    save(fig, "fig_cover_pulse.png")
+
+
 def confusion(cm: pd.DataFrame):
     labels = list(ALL_LABELS)
     cols = [c for c in labels + ["UNEXPLAINED"] if c in cm.columns]
@@ -172,6 +195,7 @@ def main():
     cm = pd.read_csv(ROOT / "results" / "confusion_matrix.csv", index_col=0)
     verdicts = pd.read_csv(ROOT / "results" / "window_verdicts.csv.gz")
     architecture()
+    cover_pulse(episodes, gt)
     pulse_overlay(episodes, gt)
     confusion(cm)
     baseline_bars(metrics)
