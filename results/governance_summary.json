@@ -1,0 +1,43 @@
+{
+  "incidents": 94,
+  "route_counts": {
+    "BIAS": {
+      "ASSIST": 0,
+      "AUTO": 0,
+      "HUMAN": 8
+    },
+    "DRIFT": {
+      "ASSIST": 1,
+      "AUTO": 13,
+      "HUMAN": 2
+    },
+    "EQUIPMENT_FAULT": {
+      "ASSIST": 0,
+      "AUTO": 0,
+      "HUMAN": 12
+    },
+    "FABRICATED": {
+      "ASSIST": 0,
+      "AUTO": 0,
+      "HUMAN": 34
+    },
+    "GRID_EVENT": {
+      "ASSIST": 0,
+      "AUTO": 8,
+      "HUMAN": 0
+    },
+    "REPLAY": {
+      "ASSIST": 0,
+      "AUTO": 0,
+      "HUMAN": 8
+    },
+    "STUCK": {
+      "ASSIST": 0,
+      "AUTO": 8,
+      "HUMAN": 0
+    }
+  },
+  "human_queue": 64,
+  "canaries_planted": 4,
+  "audit_chain_valid": true
+}

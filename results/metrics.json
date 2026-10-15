@@ -1,0 +1,135 @@
+{
+  "dataset": {
+    "test_episodes": [
+      "test_summer_evening",
+      "test_summer_heatwave",
+      "test_ramadan_iftar",
+      "test_winter_morning"
+    ],
+    "scored_windows": 11340,
+    "window_s": 60,
+    "step_s": 30
+  },
+  "nabdh": {
+    "precision": 0.9668,
+    "recall": 0.9038,
+    "f1": 0.9342,
+    "false_positive_rate": 0.00177,
+    "tp": 554,
+    "fp": 19,
+    "fn": 59,
+    "tn": 10708,
+    "per_class": {
+      "NORMAL": {
+        "windows": 10190,
+        "exact_class_recall": 0.9984,
+        "flagged_rate": 0.0016
+      },
+      "GRID_EVENT": {
+        "windows": 537,
+        "exact_class_recall": 0.9553,
+        "flagged_rate": 0.0056
+      },
+      "STUCK": {
+        "windows": 126,
+        "exact_class_recall": 1.0,
+        "flagged_rate": 1.0
+      },
+      "DRIFT": {
+        "windows": 96,
+        "exact_class_recall": 0.8646,
+        "flagged_rate": 0.9479
+      },
+      "BIAS": {
+        "windows": 99,
+        "exact_class_recall": 0.4343,
+        "flagged_rate": 0.4646
+      },
+      "FABRICATED": {
+        "windows": 121,
+        "exact_class_recall": 0.9917,
+        "flagged_rate": 1.0
+      },
+      "REPLAY": {
+        "windows": 115,
+        "exact_class_recall": 0.9304,
+        "flagged_rate": 1.0
+      },
+      "EQUIPMENT_FAULT": {
+        "windows": 56,
+        "exact_class_recall": 0.5714,
+        "flagged_rate": 0.9821
+      }
+    },
+    "event_vs_data": {
+      "grid_event_windows": 537,
+      "recognised_as_grid_event": 0.9553,
+      "mistaken_for_data_problem": 0.0056
+    },
+    "processing_ms_per_window_all_24_meters": 6.07
+  },
+  "baseline_isolation_forest_values_only": {
+    "precision": 0.0844,
+    "recall": 0.0522,
+    "f1": 0.0645,
+    "false_positive_rate": 0.03235,
+    "tp": 32,
+    "fp": 347,
+    "fn": 581,
+    "tn": 10380,
+    "flagged_rate_per_class": {
+      "NORMAL": 0.0155,
+      "GRID_EVENT": 0.352,
+      "STUCK": 0.0159,
+      "DRIFT": 0.0729,
+      "BIAS": 0.0404,
+      "FABRICATED": 0.0413,
+      "REPLAY": 0.0957,
+      "EQUIPMENT_FAULT": 0.0536
+    }
+  },
+  "detection_latency_s": [
+    {
+      "kind": "BIAS",
+      "median": 52.0,
+      "max": 62.0,
+      "injected": 8,
+      "detected": 5
+    },
+    {
+      "kind": "DRIFT",
+      "median": 67.0,
+      "max": 80.0,
+      "injected": 8,
+      "detected": 8
+    },
+    {
+      "kind": "EQUIPMENT_FAULT",
+      "median": 40.0,
+      "max": 75.0,
+      "injected": 4,
+      "detected": 4
+    },
+    {
+      "kind": "FABRICATED",
+      "median": 35.0,
+      "max": 57.0,
+      "injected": 8,
+      "detected": 8
+    },
+    {
+      "kind": "REPLAY",
+      "median": 16.5,
+      "max": 20.0,
+      "injected": 8,
+      "detected": 8
+    },
+    {
+      "kind": "STUCK",
+      "median": 49.5,
+      "max": 59.0,
+      "injected": 8,
+      "detected": 8
+    }
+  ]
+}
